@@ -6,6 +6,7 @@ from bokeh.models.widgets import Select
 import bokeh.palettes as palettes
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
 
@@ -36,7 +37,7 @@ class Visualizer:
     def visualize(self, doc):
         # Make the figure and the scatterplot.
         tooltips = [('Label', '@desc')]
-        p = figure(title="TSNE Visualization", toolbar_location='above', tooltips=tooltips)
+        p = figure(title="Visualization", toolbar_location='above', tooltips=tooltips)
 
         p.circle(x='x', y='y', size=5, line_color=None, fill_color='colors', alpha=1.0,
                  source=self.source, legend='desc')
@@ -59,6 +60,27 @@ class Visualizer:
 
         # The patch() method of the DataColumnSource lets us update data in plots.
         self.source.patch({'colors': [(slice(len(self.colors)), self.colors)]})
+
+def PCA_bokeh(labels,fc1,fc2):
+
+    fc1 = fc1.detach().numpy()
+    fc2 = fc2.detach().numpy()
+    labels = labels.detach().numpy()
+    labels = labels.reshape(-1, 1)
+    pca1 = PCA(n_components=2)
+    pca1.fit(fc1)
+
+    pca2 = PCA(n_components=2)
+    pca2.fit(fc2)
+
+    fc1_pca = pca1.transform(fc1)
+    fc2_pca = pca2.transform(fc2)
+
+    output_notebook()
+    x = fc2_pca[:,0]
+    y = fc2_pca[:,1]
+    vis = Visualizer(x, y, labels.squeeze())
+    show(vis.visualize)
 
 
 def TSNE_seaborn(labels,fc1,fc2):
